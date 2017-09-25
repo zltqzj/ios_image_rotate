@@ -39,40 +39,61 @@
         
         weakSelf.label.text = [NSString stringWithFormat:@"%@",dict[@"Orientation"]];
         UIImage *selectImage = [[info objectForKey:UIImagePickerControllerOriginalImage] fixOrientation];
-        
-        
-//        weakSelf.imageView.image = selectImage ;
-        cv::Mat matImage = [weakSelf  cvMatFromUIImage:selectImage];
-        cv::Mat matGrey;
-         // 灰度
-        cv::cvtColor(matImage, matGrey, CV_BGR2GRAY);
-        
-        // 高斯滤波
-        cv::GaussianBlur(matGrey, matGrey, cv::Size(5,5), 0);
-        
-        //-------------------------------------------------------------以上为和python一样
-        cv::Mat matBinary;
-        IplImage grey = matGrey;
-        unsigned char* dataImage = (unsigned char*)grey.imageData;
-        
-        int threshold = Otsu(dataImage, grey.width, grey.height);
-        
-      // NSInteger blockSize  = MAX(, <#B#>)
-        cv::adaptiveThreshold(matGrey, matBinary, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 1, 5);
-        cv::threshold(matGrey, matBinary, threshold, 255, cv::THRESH_BINARY);   // 二值化
-        
-        weakSelf.imageView.image = [weakSelf UIImageFromCVMat:matBinary];
+    
+        weakSelf.imageView.image = [weakSelf UIImageFromCVMat:[weakSelf preProcess:selectImage]];
  
         NSLog(@"%ld",(long)weakSelf.imageView.image.imageOrientation);  // 0
         weakSelf.label2.text = [NSString stringWithFormat:@"%ld",(long)weakSelf.imageView.image.imageOrientation];
         [weakSelf.picker dismissViewControllerAnimated:YES completion:nil];
-        
         
     };
     _picker.bk_didCancelBlock  = ^(UIImagePickerController *picker){
          
     };
     [self presentViewController:_picker animated:YES completion:nil];
+}
+
+
+-(void)findMxPolygon:(UIImage*)image{
+    std::vector<std::vector<cv::Point> > contours  = [self findContours:image external:YES];
+    if (contours.size() == 0) {
+        return ;
+    }
+    else{
+        
+    }
+}
+
+
+-(std::vector<std::vector<cv::Point> >)findContours:(UIImage*)image external:(BOOL)external{
+    
+    int mode = external == YES? cv::RETR_EXTERNAL : cv::RETR_CCOMP ;
+    cv::Mat matImage = [self  cvMatFromUIImage:image];
+    std::vector<std::vector<cv::Point> > contours;
+    cv::findContours(matImage, contours, mode, cv::CHAIN_APPROX_SIMPLE);
+    return contours;
+}
+
+-(cv::Mat)preProcess:(UIImage*) selectImage{
+    
+    cv::Mat matImage = [self  cvMatFromUIImage:selectImage];
+    cv::Mat matGrey;
+    // 灰度
+    cv::cvtColor(matImage, matGrey, CV_BGR2GRAY);
+    
+    // 高斯滤波
+    cv::GaussianBlur(matGrey, matGrey, cv::Size(5,5), 0);
+    
+#pragma mark - // block_size ???
+    int block_size = 3;
+    cv::Mat matBinary;
+    
+    cv::adaptiveThreshold(matGrey, matBinary, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, block_size, 5) ;
+    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(block_size,block_size));
+    cv::morphologyEx(matBinary, matBinary, cv::MORPH_CLOSE, kernel,cv::Point(-1,-1),3);
+    
+    return matBinary;
+    
 }
 
 
