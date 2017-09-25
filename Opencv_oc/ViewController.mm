@@ -44,15 +44,21 @@
 //        weakSelf.imageView.image = selectImage ;
         cv::Mat matImage = [weakSelf  cvMatFromUIImage:selectImage];
         cv::Mat matGrey;
-        cv::cvtColor(matImage, matGrey, CV_BGR2GRAY);  // 灰度
+         // 灰度
+        cv::cvtColor(matImage, matGrey, CV_BGR2GRAY);
         
-        cv::GaussianBlur(matGrey, matGrey, cv::Size(5,5), 1.2,1.2);  // 高斯滤波
+        // 高斯滤波
+        cv::GaussianBlur(matGrey, matGrey, cv::Size(5,5), 0);
         
-        
+        //-------------------------------------------------------------以上为和python一样
         cv::Mat matBinary;
         IplImage grey = matGrey;
         unsigned char* dataImage = (unsigned char*)grey.imageData;
+        
         int threshold = Otsu(dataImage, grey.width, grey.height);
+        
+      // NSInteger blockSize  = MAX(, <#B#>)
+        cv::adaptiveThreshold(matGrey, matBinary, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 1, 5);
         cv::threshold(matGrey, matBinary, threshold, 255, cv::THRESH_BINARY);   // 二值化
         
         weakSelf.imageView.image = [weakSelf UIImageFromCVMat:matBinary];
