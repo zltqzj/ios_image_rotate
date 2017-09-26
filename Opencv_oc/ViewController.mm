@@ -20,10 +20,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
     [_btn addTarget:self action:@selector(click) forControlEvents:UIControlEventTouchUpInside];
-    
- 
 }
 
 -(void)click{
@@ -40,7 +37,13 @@
         weakSelf.label.text = [NSString stringWithFormat:@"%@",dict[@"Orientation"]];
         UIImage *selectImage = [[info objectForKey:UIImagePickerControllerOriginalImage] fixOrientation];
     
-        weakSelf.imageView.image = [weakSelf UIImageFromCVMat:[weakSelf preProcess:selectImage]];
+        // 预处理
+        cv::Mat preProcessImage =  [weakSelf preProcess:selectImage];
+        
+        // 找面积最大的外接四边形的四个顶点
+        [weakSelf findMaxPolygon:preProcessImage];
+      
+        weakSelf.imageView.image = [weakSelf UIImageFromCVMat:preProcessImage]  ;
  
         NSLog(@"%ld",(long)weakSelf.imageView.image.imageOrientation);  // 0
         weakSelf.label2.text = [NSString stringWithFormat:@"%ld",(long)weakSelf.imageView.image.imageOrientation];
@@ -53,50 +56,112 @@
     [self presentViewController:_picker animated:YES completion:nil];
 }
 
-
--(void)findMxPolygon:(UIImage*)image{
+// 找到图像上面积最大的外接四边形的四个顶点
+-(void)findMaxPolygon:(cv::Mat)image{
     std::vector<std::vector<cv::Point> > contours  = [self findContours:image external:YES];
-    if (contours.size() == 0) {
+    NSLog(@"%lu",contours.size());
+    if (contours.size() == 0)
         return ;
+#pragma mark - sort ???
+    
+    std::sort(contours.begin(), contours.end(), conter_area_cmp);
+    float alpha = 0.0001;
+    
+    while (1) {
+      std::vector<cv::Point> approx = [self approxPolyDP:contours[0] alpha:alpha];
+        long size = approx.size();
+        NSLog(@"%ld",size);
+        if (size > 50) {
+            alpha *= 1.5;
+        }
+        else if(size > 10){
+            alpha *= 1.2;
+        }
+        else if(size > 4){
+                //
+            alpha *= 1.1;
+        }
+        else if (size == 4){
+
+            break;
+        }
+        else{
+            NSLog(@"error");
+        }
+
+
     }
-    else{
-        
-    }
+//    return  approx  std::vector<cv::Point>
+    
+    
 }
 
 
--(std::vector<std::vector<cv::Point> >)findContours:(UIImage*)image external:(BOOL)external{
+
+
+-(void)merge:(std::vector<cv::Point>)approx{
+    
+}
+
+
+// 多边形拟合，拟合精度为轮廓周长的alpha
+-(std::vector<cv::Point>)approxPolyDP:(std::vector<cv::Point> )contour alpha:(float)alpha{
+    double epsilon = alpha * cv::arcLength(contour, true) ;
+    std::vector<cv::Point>  dest_contour ;
+    cv::approxPolyDP(contour, dest_contour, epsilon, true);
+    return dest_contour ;
+}
+
+int conter_area_cmp(const std::vector<cv::Point> &a, const std::vector<cv::Point> &b) {
+    return cv::contourArea(b) > cv::contourArea(a);
+}
+
+
+// 取图像的连通区域
+-(std::vector<std::vector<cv::Point> >)findContours:(cv::Mat)matImage external:(BOOL)external{
     
     int mode = external == YES? cv::RETR_EXTERNAL : cv::RETR_CCOMP ;
-    cv::Mat matImage = [self  cvMatFromUIImage:image];
     std::vector<std::vector<cv::Point> > contours;
     cv::findContours(matImage, contours, mode, cv::CHAIN_APPROX_SIMPLE);
     return contours;
 }
 
--(cv::Mat)preProcess:(UIImage*) selectImage{
+
+// 预处理
+-(cv::Mat)preProcess:(UIImage*)selectImage{
     
     cv::Mat matImage = [self  cvMatFromUIImage:selectImage];
-    cv::Mat matGrey;
+
     // 灰度
+    cv::Mat matGrey;
     cv::cvtColor(matImage, matGrey, CV_BGR2GRAY);
     
     // 高斯滤波
-    cv::GaussianBlur(matGrey, matGrey, cv::Size(5,5), 0);
+    cv::Mat matBlur;
+    cv::GaussianBlur(matGrey, matBlur, cv::Size(5,5), 0);
     
 #pragma mark - // block_size ???
-    int block_size = 3;
+    
+    int block_size = 5;
+    
+//    int width = selectImage.size.width ;
+//    int height = selectImage.size.height;
+//    block_size  =  MAX(MAX(width / 500 * 2 +1, height / 500 * 2 + 1), 3) ;
+//    NSLog(@"%d",block_size);
+    
     cv::Mat matBinary;
     
-    cv::adaptiveThreshold(matGrey, matBinary, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, block_size, 5) ;
+    // 二值化
+    cv::adaptiveThreshold(matBlur, matBinary, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, block_size, 5) ;
     cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(block_size,block_size));
-    cv::morphologyEx(matBinary, matBinary, cv::MORPH_CLOSE, kernel,cv::Point(-1,-1),3);
     
-    return matBinary;
+    // 形态学运算函数，闭运算
+    cv::Mat matClose;
+    cv::morphologyEx(matBinary, matClose, cv::MORPH_CLOSE, kernel,cv::Point(-1,-1),3);
+    
+    return matClose;
     
 }
-
-
 
 #pragma mark - opencv method
 - (cv::Mat)cvMatFromUIImage:(UIImage *)image
