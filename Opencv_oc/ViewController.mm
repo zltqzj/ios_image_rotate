@@ -7,12 +7,12 @@
 //
 
 #import "ViewController.h"
-#import "BlocksKit.h"
+//#import "BlocksKit.h"
 #import "UIImage+fixOrientation.h"
-#import "UIImagePickerController+BlocksKit.h"
+//#import "UIImagePickerController+BlocksKit.h"
 #import <opencv2/opencv.hpp>
-@interface ViewController () <UIImagePickerControllerDelegate>
-@property(strong,nonatomic) UIImagePickerController* picker;
+@interface ViewController () <UIImagePickerControllerDelegate,UINavigationControllerDelegate>
+@property(strong,nonatomic) UIImagePickerController *picker;
 
 @end
 
@@ -26,34 +26,36 @@
 -(void)click{
     _picker = [[UIImagePickerController alloc] init];
     _picker.sourceType = UIImagePickerControllerSourceTypeCamera;
-    _picker.allowsEditing = YES;
+    _picker.allowsEditing = NO;
+    _picker.delegate = self;
     
-   __weak typeof(self) weakSelf = self;
-    
-    _picker.bk_didFinishPickingMediaBlock = ^(UIImagePickerController *picker , NSDictionary *info){
- 
-        NSDictionary* dict = [info objectForKey:UIImagePickerControllerMediaMetadata];
-        
-        weakSelf.label.text = [NSString stringWithFormat:@"%@",dict[@"Orientation"]];
-        UIImage *selectImage = [[info objectForKey:UIImagePickerControllerOriginalImage] fixOrientation];
-    
-        // 预处理
-        cv::Mat preProcessImage =  [weakSelf preProcess:selectImage];
-        
-        // 找面积最大的外接四边形的四个顶点
-        [weakSelf findMaxPolygon:preProcessImage];
-      
-        weakSelf.imageView.image = [weakSelf UIImageFromCVMat:preProcessImage]  ;
- 
-        NSLog(@"%ld",(long)weakSelf.imageView.image.imageOrientation);  // 0
-        weakSelf.label2.text = [NSString stringWithFormat:@"%ld",(long)weakSelf.imageView.image.imageOrientation];
-        [weakSelf.picker dismissViewControllerAnimated:YES completion:nil];
-        
-    };
-    _picker.bk_didCancelBlock  = ^(UIImagePickerController *picker){
-         
-    };
     [self presentViewController:_picker animated:YES completion:nil];
+}
+
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
+    __weak typeof(self) weakSelf = self;
+
+    NSDictionary* dict = [info objectForKey:UIImagePickerControllerMediaMetadata];
+    
+    weakSelf.label.text = [NSString stringWithFormat:@"%@",dict[@"Orientation"]];
+    UIImage *selectImage = [[info objectForKey:UIImagePickerControllerOriginalImage] fixOrientation];
+    
+    // 预处理
+    cv::Mat preProcessImage =  [weakSelf preProcess:selectImage];
+    
+    // 找面积最大的外接四边形的四个顶点
+//    [weakSelf findMaxPolygon:preProcessImage];
+    
+    weakSelf.imageView.image = [weakSelf UIImageFromCVMat:preProcessImage]  ;
+    
+    NSLog(@"%ld",(long)weakSelf.imageView.image.imageOrientation);  // 0
+    weakSelf.label2.text = [NSString stringWithFormat:@"%ld",(long)weakSelf.imageView.image.imageOrientation];
+    [weakSelf.picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
+    [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
 // 找到图像上面积最大的外接四边形的四个顶点
@@ -92,8 +94,7 @@
 
     }
 //    return  approx  std::vector<cv::Point>
-    
-    
+
 }
 
 

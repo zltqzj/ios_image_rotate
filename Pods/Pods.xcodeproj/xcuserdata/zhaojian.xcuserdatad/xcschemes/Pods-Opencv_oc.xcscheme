@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "47FB1C4D908982B598D62DE0D556D0BB"
+               BlueprintIdentifier = "02997D267470B3E5783D0C8ADC55F380"
                BuildableName = "Pods_Opencv_oc.framework"
                BlueprintName = "Pods-Opencv_oc"
                ReferencedContainer = "container:Pods.xcodeproj">
@@ -47,7 +47,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "47FB1C4D908982B598D62DE0D556D0BB"
+            BlueprintIdentifier = "02997D267470B3E5783D0C8ADC55F380"
             BuildableName = "Pods_Opencv_oc.framework"
             BlueprintName = "Pods-Opencv_oc"
             ReferencedContainer = "container:Pods.xcodeproj">

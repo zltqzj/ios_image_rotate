@@ -7,6 +7,6 @@ target 'Opencv_oc' do
 
   # Pods for ARuler
 pod 'OpenCV'
-pod 'BlocksKit'
+#pod 'BlocksKit'
 
 end

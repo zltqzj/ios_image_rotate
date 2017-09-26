@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		166F86E21F7A38EB00B55248 /* BlocksKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 166F86E31F7A38EB00B55248 /* BlocksKit.framework */; };
 		169FAF571F69087F00CB358C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 169FAF561F69087F00CB358C /* AppDelegate.m */; };
 		169FAF5A1F69087F00CB358C /* ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 169FAF591F69087F00CB358C /* ViewController.mm */; };
 		169FAF5D1F69087F00CB358C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 169FAF5B1F69087F00CB358C /* Main.storyboard */; };
@@ -67,7 +66,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				166F86E21F7A38EB00B55248 /* BlocksKit.framework in Frameworks */,
 				4FE7923AC33C23A97A4772A0 /* Pods_Opencv_oc.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -243,7 +241,7 @@
 				TargetAttributes = {
 					169FAF511F69087F00CB358C = {
 						CreatedOnToolsVersion = 9.0;
-						ProvisioningStyle = Manual;
+						ProvisioningStyle = Automatic;
 					};
 					169FAF691F69087F00CB358C = {
 						CreatedOnToolsVersion = 9.0;
@@ -531,17 +529,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Beijing Boxfish Education Technology Co., Ltd.";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Beijing Boxfish Education Technology Co., Ltd.";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = X4AW54WQH8;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DN4X74J86T;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Opencv_oc/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.boxfish.english;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zj.opencv;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "4d540936-738f-40a9-826d-58771ef65b53";
-				PROVISIONING_PROFILE_SPECIFIER = "enterprise student";
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -552,17 +550,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Distribution: Beijing Boxfish Education Technology Co., Ltd.";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Beijing Boxfish Education Technology Co., Ltd.";
-				CODE_SIGN_STYLE = Manual;
-				DEVELOPMENT_TEAM = X4AW54WQH8;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DN4X74J86T;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Opencv_oc/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.boxfish.english;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zj.opencv;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "4d540936-738f-40a9-826d-58771ef65b53";
-				PROVISIONING_PROFILE_SPECIFIER = "enterprise student";
+				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
