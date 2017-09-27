@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1614CE7C1F7B3DF50013DC1E /* RectReviseViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1614CE7B1F7B3DF50013DC1E /* RectReviseViewController.mm */; };
 		169FAF571F69087F00CB358C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 169FAF561F69087F00CB358C /* AppDelegate.m */; };
 		169FAF5A1F69087F00CB358C /* ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 169FAF591F69087F00CB358C /* ViewController.mm */; };
 		169FAF5D1F69087F00CB358C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 169FAF5B1F69087F00CB358C /* Main.storyboard */; };
@@ -37,6 +38,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1614CE7A1F7B3DF50013DC1E /* RectReviseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RectReviseViewController.h; sourceTree = "<group>"; };
+		1614CE7B1F7B3DF50013DC1E /* RectReviseViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RectReviseViewController.mm; sourceTree = "<group>"; };
 		166F86E31F7A38EB00B55248 /* BlocksKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BlocksKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		169FAF521F69087F00CB358C /* Opencv_oc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Opencv_oc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		169FAF551F69087F00CB358C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -126,6 +129,8 @@
 				169FAF561F69087F00CB358C /* AppDelegate.m */,
 				169FAF581F69087F00CB358C /* ViewController.h */,
 				169FAF591F69087F00CB358C /* ViewController.mm */,
+				1614CE7A1F7B3DF50013DC1E /* RectReviseViewController.h */,
+				1614CE7B1F7B3DF50013DC1E /* RectReviseViewController.mm */,
 				169FAF5B1F69087F00CB358C /* Main.storyboard */,
 				169FAF5E1F69087F00CB358C /* Assets.xcassets */,
 				169FAF601F69087F00CB358C /* LaunchScreen.storyboard */,
@@ -359,6 +364,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1614CE7C1F7B3DF50013DC1E /* RectReviseViewController.mm in Sources */,
 				169FAF5A1F69087F00CB358C /* ViewController.mm in Sources */,
 				169FAF651F69087F00CB358C /* main.m in Sources */,
 				169FAF8D1F69294100CB358C /* UIImage+fixOrientation.m in Sources */,

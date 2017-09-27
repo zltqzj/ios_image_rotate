@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="z1A-wC-PVx">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
@@ -71,6 +71,57 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="32.799999999999997" y="38.23088455772114"/>
+        </scene>
+        <!--Rect Revise View Controller-->
+        <scene sceneID="74O-5U-ur7">
+            <objects>
+                <viewController id="z1A-wC-PVx" customClass="RectReviseViewController" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Yjp-Vw-ElE">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Lo1-Ap-yKE">
+                                <rect key="frame" x="82" y="357" width="232" height="130"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="130" id="TeA-AQ-m4j"/>
+                                    <constraint firstAttribute="width" constant="232" id="fdf-kG-E2g"/>
+                                </constraints>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mvo-xm-hlt">
+                                <rect key="frame" x="164" y="580" width="46" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="M9Y-1G-O6A"/>
+                                    <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="44" id="e8P-LX-OA7"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                            </button>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="f2e-8f-S2E">
+                                <rect key="frame" x="67.5" y="171" width="240" height="128"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="240" id="wPR-TS-Olp"/>
+                                    <constraint firstAttribute="height" constant="128" id="ydN-gj-RSu"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="f2e-8f-S2E" firstAttribute="centerX" secondItem="Yjp-Vw-ElE" secondAttribute="centerX" id="9Lu-Mo-wZC"/>
+                            <constraint firstItem="ADa-6A-vpb" firstAttribute="bottom" secondItem="mvo-xm-hlt" secondAttribute="bottom" constant="57" id="CII-nW-e2Y"/>
+                            <constraint firstItem="Lo1-Ap-yKE" firstAttribute="centerY" secondItem="Yjp-Vw-ElE" secondAttribute="centerY" constant="88.5" id="W01-Vf-YXt"/>
+                            <constraint firstItem="Lo1-Ap-yKE" firstAttribute="top" secondItem="f2e-8f-S2E" secondAttribute="bottom" constant="58" id="ekn-Nk-Z98"/>
+                            <constraint firstItem="Lo1-Ap-yKE" firstAttribute="centerX" secondItem="Yjp-Vw-ElE" secondAttribute="centerX" constant="10.5" id="hKl-QP-sBO"/>
+                            <constraint firstItem="mvo-xm-hlt" firstAttribute="centerX" secondItem="Yjp-Vw-ElE" secondAttribute="centerX" id="vBc-LN-bnF"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="ADa-6A-vpb"/>
+                    </view>
+                    <connections>
+                        <outlet property="btn" destination="mvo-xm-hlt" id="Lrd-Nd-9Gm"/>
+                        <outlet property="imageView" destination="Lo1-Ap-yKE" id="jQF-fI-ktM"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="FcH-eY-Y8X" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="807.20000000000005" y="26.53673163418291"/>
         </scene>
     </scenes>
 </document>

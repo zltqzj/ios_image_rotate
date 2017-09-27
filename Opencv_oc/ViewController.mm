@@ -11,6 +11,11 @@
 #import "UIImage+fixOrientation.h"
 //#import "UIImagePickerController+BlocksKit.h"
 #import <opencv2/opencv.hpp>
+using namespace cv;
+using namespace std;
+
+
+
 @interface ViewController () <UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 @property(strong,nonatomic) UIImagePickerController *picker;
 
@@ -42,10 +47,10 @@
     UIImage *selectImage = [[info objectForKey:UIImagePickerControllerOriginalImage] fixOrientation];
     
     // 预处理
-    cv::Mat preProcessImage =  [weakSelf preProcess:selectImage];
+    Mat preProcessImage =  [weakSelf preProcess:selectImage];
     
     // 找面积最大的外接四边形的四个顶点
-//    [weakSelf findMaxPolygon:preProcessImage];
+//   Mat dingdian =  [weakSelf findMaxPolygon:preProcessImage];
     
     weakSelf.imageView.image = [weakSelf UIImageFromCVMat:preProcessImage]  ;
     
@@ -59,87 +64,117 @@
 }
 
 // 找到图像上面积最大的外接四边形的四个顶点
--(void)findMaxPolygon:(cv::Mat)image{
-    std::vector<std::vector<cv::Point> > contours  = [self findContours:image external:YES];
-    NSLog(@"%lu",contours.size());
+-(Mat)findMaxPolygon:(Mat)image{
+    vector<vector<cv::Point> > contours  = [self findContours:image external:YES];
+    NSLog(@"size------------%lu",contours.size());
     if (contours.size() == 0)
-        return ;
+        return image;
+    
+    double maxArea = 0;
+    vector<cv::Point> maxContour;
+    for(size_t i = 0; i < contours.size(); i++)
+    {
+        double area = cv::contourArea(contours[i]);
+        if (area > maxArea)
+        {
+            maxArea = area;
+            maxContour = contours[i];
+        }
+    }
+    
+    // 将轮廓转为矩形框
+    cv::Rect maxRect = cv::boundingRect(maxContour);
+    
+    // 显示连通域
+    cv::Mat result1, result2;
+
+    image.copyTo(result1);
+    image.copyTo(result2);
+    
+    for (size_t i = 0; i < contours.size(); i++)
+    {
+        cv::Rect r = cv::boundingRect(contours[i]);
+        cv::rectangle(result1, r, cv::Scalar(255));
+    }
+    cv::rectangle(result2, maxRect, cv::Scalar(255));
+    return result2;
+    
 #pragma mark - sort ???
     
-    std::sort(contours.begin(), contours.end(), conter_area_cmp);
-    float alpha = 0.0001;
-    
-    while (1) {
-      std::vector<cv::Point> approx = [self approxPolyDP:contours[0] alpha:alpha];
-        long size = approx.size();
-        NSLog(@"%ld",size);
-        if (size > 50) {
-            alpha *= 1.5;
-        }
-        else if(size > 10){
-            alpha *= 1.2;
-        }
-        else if(size > 4){
-                //
-            alpha *= 1.1;
-        }
-        else if (size == 4){
-
-            break;
-        }
-        else{
-            NSLog(@"error");
-        }
-
-
-    }
-//    return  approx  std::vector<cv::Point>
+//    sort(contours.begin(), contours.end(), conter_area_cmp);
+//    float alpha = 0.0001;
+//
+//    while (1) {
+//      vector<Point> approx = [self approxPolyDP:contours[0] alpha:alpha];
+//        long size = approx.size();
+//        NSLog(@"%ld",size);
+//        if (size > 50) {
+//            alpha *= 1.5;
+//        }
+//        else if(size > 10){
+//            alpha *= 1.2;
+//        }
+//        else if(size > 4){
+//                //
+//            alpha *= 1.1;
+//        }
+//        else if (size == 4){
+//
+//            break;
+//        }
+//        else{
+//            NSLog(@"error");
+//        }
+//
+//
+//    }
+//    return  approx  vector<Point>
 
 }
 
 
 
 
--(void)merge:(std::vector<cv::Point>)approx{
+-(void)merge:(vector<cv::Point>)approx{
     
 }
 
 
 // 多边形拟合，拟合精度为轮廓周长的alpha
--(std::vector<cv::Point>)approxPolyDP:(std::vector<cv::Point> )contour alpha:(float)alpha{
-    double epsilon = alpha * cv::arcLength(contour, true) ;
-    std::vector<cv::Point>  dest_contour ;
-    cv::approxPolyDP(contour, dest_contour, epsilon, true);
+-(vector<cv::Point>)approxPolyDP:(vector<cv::Point> )contour alpha:(float)alpha{
+    double epsilon = alpha * arcLength(contour, true) ;
+    vector<cv::Point>  dest_contour ;
+    approxPolyDP(contour, dest_contour, epsilon, true);
     return dest_contour ;
 }
 
-int conter_area_cmp(const std::vector<cv::Point> &a, const std::vector<cv::Point> &b) {
-    return cv::contourArea(b) > cv::contourArea(a);
+int conter_area_cmp(const vector<cv::Point> &a, const vector<cv::Point> &b) {
+    return contourArea(b) > contourArea(a);
 }
 
 
 // 取图像的连通区域
--(std::vector<std::vector<cv::Point> >)findContours:(cv::Mat)matImage external:(BOOL)external{
+-(vector<vector<cv::Point> >)findContours:(Mat)matImage external:(BOOL)external{
     
-    int mode = external == YES? cv::RETR_EXTERNAL : cv::RETR_CCOMP ;
-    std::vector<std::vector<cv::Point> > contours;
-    cv::findContours(matImage, contours, mode, cv::CHAIN_APPROX_SIMPLE);
+    int mode = external == YES? RETR_EXTERNAL : RETR_CCOMP ;
+    vector<vector<cv::Point> > contours;
+    findContours(matImage, contours, mode, CHAIN_APPROX_SIMPLE);
     return contours;
 }
 
 
 // 预处理
--(cv::Mat)preProcess:(UIImage*)selectImage{
+-(Mat)preProcess:(UIImage*)selectImage{
     
-    cv::Mat matImage = [self  cvMatFromUIImage:selectImage];
+    Mat matImage = [self  cvMatFromUIImage:selectImage];
 
     // 灰度
-    cv::Mat matGrey;
-    cv::cvtColor(matImage, matGrey, CV_BGR2GRAY);
+    Mat matGrey;
+    cvtColor(matImage, matGrey, CV_BGR2GRAY);
     
     // 高斯滤波
-    cv::Mat matBlur;
-    cv::GaussianBlur(matGrey, matBlur, cv::Size(5,5), 0);
+    Mat matBlur;
+    GaussianBlur(matGrey, matBlur, cv::Size(5,5), 0);
     
 #pragma mark - // block_size ???
     
@@ -150,28 +185,50 @@ int conter_area_cmp(const std::vector<cv::Point> &a, const std::vector<cv::Point
 //    block_size  =  MAX(MAX(width / 500 * 2 +1, height / 500 * 2 + 1), 3) ;
 //    NSLog(@"%d",block_size);
     
-    cv::Mat matBinary;
+    Mat matBinary;
+    IplImage blur = matBlur;
+ 
+    unsigned char* dataImage = (unsigned char*)blur.imageData;
+    int threshold = Otsu1(dataImage, blur.width, blur.height);
+    printf("阈值：%d\n",threshold);
+    cv::threshold(matGrey, matBinary, threshold, 255, THRESH_BINARY);
+    std::vector<cv::Vec4i> lines;
+    //  void HoughLinesP( InputArray image, OutputArray lines,
+//    double rho, double theta, int threshold,
+//    double minLineLength = 0, double maxLineGap = 0 );
+
+    cv::HoughLinesP(matBinary, lines, 1,  CV_PI/180, 70);
+    for (int i = 0; i < lines.size(); i++)
+    {
+        cv::Vec4i v = lines[i];
+        lines[i][0] = 0;
+        lines[i][1] = ((float)v[1] - v[3]) / (v[0] - v[2]) * -v[0] + v[1];
+        lines[i][2] = matBinary.cols;
+        lines[i][3] = ((float)v[1] - v[3]) / (v[0] - v[2]) * (matBinary.cols - v[2]) + v[3];
+    }
+  
+    
     
     // 二值化
-    cv::adaptiveThreshold(matBlur, matBinary, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, block_size, 5) ;
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(block_size,block_size));
+//    adaptiveThreshold(matBlur, matBinary, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, block_size, 5) ;
+    Mat kernel = getStructuringElement(MORPH_RECT, cv::Size(block_size,block_size));
     
     // 形态学运算函数，闭运算
-    cv::Mat matClose;
-    cv::morphologyEx(matBinary, matClose, cv::MORPH_CLOSE, kernel,cv::Point(-1,-1),3);
+//    Mat matClose;
+//    morphologyEx(matBinary, matClose, MORPH_CLOSE, kernel,cv::Point(-1,-1),3);
     
-    return matClose;
+    return matBinary;
     
 }
 
 #pragma mark - opencv method
-- (cv::Mat)cvMatFromUIImage:(UIImage *)image
+- (Mat)cvMatFromUIImage:(UIImage *)image
 {
     CGColorSpaceRef colorSpace = CGImageGetColorSpace(image.CGImage);
     CGFloat cols = image.size.width;
     CGFloat rows = image.size.height;
     
-    cv::Mat cvMat(rows, cols, CV_8UC4); // 8 bits per component, 4 channels
+    Mat cvMat(rows, cols, CV_8UC4); // 8 bits per component, 4 channels
     
     CGContextRef contextRef = CGBitmapContextCreate(cvMat.data,                 // Pointer to  data
                                                     cols,                       // Width of bitmap
@@ -189,7 +246,7 @@ int conter_area_cmp(const std::vector<cv::Point> &a, const std::vector<cv::Point
     return cvMat;
 }
 
--(UIImage *)UIImageFromCVMat:(cv::Mat)cvMat
+-(UIImage *)UIImageFromCVMat:(Mat)cvMat
 {
     NSData *data = [NSData dataWithBytes:cvMat.data length:cvMat.elemSize()*cvMat.total()];
     CGColorSpaceRef colorSpace;
@@ -202,7 +259,7 @@ int conter_area_cmp(const std::vector<cv::Point> &a, const std::vector<cv::Point
     
     CGDataProviderRef provider = CGDataProviderCreateWithCFData((__bridge CFDataRef)data);
     
-    // Creating CGImage from cv::Mat
+    // Creating CGImage from Mat
     CGImageRef imageRef = CGImageCreate(cvMat.cols,                                 //width
                                         cvMat.rows,                                 //height
                                         8,                                          //bits per component
@@ -231,7 +288,7 @@ int conter_area_cmp(const std::vector<cv::Point> &a, const std::vector<cv::Point
 #pragma mark - custom method
 
 // OSTU算法求出阈值
-int  Otsu(unsigned char* pGrayImg , int iWidth , int iHeight)
+int  Otsu1(unsigned char* pGrayImg , int iWidth , int iHeight)
 {
     if((pGrayImg==0)||(iWidth<=0)||(iHeight<=0))return -1;
     int ihist[256];
@@ -277,10 +334,11 @@ int  Otsu(unsigned char* pGrayImg , int iWidth , int iHeight)
 }
 
 
+
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
 
 @end
