@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		1614CE7C1F7B3DF50013DC1E /* RectReviseViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1614CE7B1F7B3DF50013DC1E /* RectReviseViewController.mm */; };
+		1638D8A41F7CC98700C27946 /* test.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 1638D8A31F7CC6AC00C27946 /* test.jpg */; };
+		1638D8A81F7CCAE600C27946 /* test3.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 1638D8A71F7CCAD400C27946 /* test3.jpg */; };
+		1638D8A91F7CCAE800C27946 /* test2.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 1638D8A61F7CCAD400C27946 /* test2.jpg */; };
 		169FAF571F69087F00CB358C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 169FAF561F69087F00CB358C /* AppDelegate.m */; };
 		169FAF5A1F69087F00CB358C /* ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 169FAF591F69087F00CB358C /* ViewController.mm */; };
 		169FAF5D1F69087F00CB358C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 169FAF5B1F69087F00CB358C /* Main.storyboard */; };
@@ -40,6 +43,9 @@
 /* Begin PBXFileReference section */
 		1614CE7A1F7B3DF50013DC1E /* RectReviseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RectReviseViewController.h; sourceTree = "<group>"; };
 		1614CE7B1F7B3DF50013DC1E /* RectReviseViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RectReviseViewController.mm; sourceTree = "<group>"; };
+		1638D8A31F7CC6AC00C27946 /* test.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = test.jpg; sourceTree = "<group>"; };
+		1638D8A61F7CCAD400C27946 /* test2.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = test2.jpg; sourceTree = "<group>"; };
+		1638D8A71F7CCAD400C27946 /* test3.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = test3.jpg; sourceTree = "<group>"; };
 		166F86E31F7A38EB00B55248 /* BlocksKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = BlocksKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		169FAF521F69087F00CB358C /* Opencv_oc.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Opencv_oc.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		169FAF551F69087F00CB358C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -124,6 +130,9 @@
 		169FAF541F69087F00CB358C /* Opencv_oc */ = {
 			isa = PBXGroup;
 			children = (
+				1638D8A61F7CCAD400C27946 /* test2.jpg */,
+				1638D8A71F7CCAD400C27946 /* test3.jpg */,
+				1638D8A31F7CC6AC00C27946 /* test.jpg */,
 				169FAF871F6928D800CB358C /* ImageCategory */,
 				169FAF551F69087F00CB358C /* AppDelegate.h */,
 				169FAF561F69087F00CB358C /* AppDelegate.m */,
@@ -285,7 +294,10 @@
 			files = (
 				169FAF621F69087F00CB358C /* LaunchScreen.storyboard in Resources */,
 				169FAF5F1F69087F00CB358C /* Assets.xcassets in Resources */,
+				1638D8A91F7CCAE800C27946 /* test2.jpg in Resources */,
 				169FAF5D1F69087F00CB358C /* Main.storyboard in Resources */,
+				1638D8A41F7CC98700C27946 /* test.jpg in Resources */,
+				1638D8A81F7CCAE600C27946 /* test3.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -542,7 +554,7 @@
 				INFOPLIST_FILE = Opencv_oc/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.zj.opencv;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zj.opencv1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -563,7 +575,7 @@
 				INFOPLIST_FILE = Opencv_oc/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.zj.opencv;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zj.opencv1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

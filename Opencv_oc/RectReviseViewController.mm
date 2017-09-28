@@ -73,7 +73,20 @@ void sortCorners(std::vector<cv::Point2f>& corners,cv::Point2f center)
 - (void)viewDidLoad {
     [super viewDidLoad];
     [_btn addTarget:self action:@selector(click) forControlEvents:UIControlEventTouchUpInside];
+    self.imageView.contentMode =  UIViewContentModeScaleAspectFit;
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+                                                         NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    NSString* path = [documentsDirectory stringByAppendingPathComponent:
+                      [NSString stringWithFormat: @"test.jpg"] ];
+    NSLog(@"%@",path);
+    NSData* data = UIImageJPEGRepresentation([self.originImageView.image fixOrientation], 0.9);
+    [data writeToFile:path atomically:YES];
 
+    
+    Mat dst =  [self scan:[path UTF8String] debug:true];
+    self.imageView.image = [self UIImageFromCVMat:dst];
     // Do any additional setup after loading the view.
 }
 
@@ -88,7 +101,7 @@ void sortCorners(std::vector<cv::Point2f>& corners,cv::Point2f center)
 }
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
-    __weak typeof(self) weakSelf = self;
+//    __weak typeof(self) weakSelf = self;
     
 //    NSDictionary* dict = [info objectForKey:UIImagePickerControllerMediaMetadata];
     UIImage *selectImage = [[info objectForKey:UIImagePickerControllerOriginalImage] fixOrientation];
@@ -102,7 +115,7 @@ void sortCorners(std::vector<cv::Point2f>& corners,cv::Point2f center)
     NSLog(@"%@",path);
     NSData* data = UIImagePNGRepresentation(selectImage);
     [data writeToFile:path atomically:YES];
-//    scan([path UTF8String]);
+
    Mat dst =  [self scan:[path UTF8String] debug:true];
     self.imageView.image = [self UIImageFromCVMat:dst];
     [picker dismissViewControllerAnimated:YES completion:nil];
@@ -286,7 +299,7 @@ Point2f computeIntersect(Line l1, Line l2) {
     // get edges of the image
     Mat gray, canny,bina;
     cvtColor(img_proc, gray, CV_BGR2GRAY);
-  
+ 
     getCanny(gray, canny);
     
     // extract lines from the edge image
@@ -372,79 +385,13 @@ Point2f computeIntersect(Line l1, Line l2) {
     // apply perspective transformation
     warpPerspective(img, dst, transmtx, dst.size());
     return dst;
-    // save dst img
-//    imwrite("dst.jpg", dst);
-    
-    // for visualization only
-//    if (debug) {
-//        namedWindow("dst", CV_WINDOW_KEEPRATIO);
-//        imshow("src", img_dis);
-//        imshow("canny", canny);
-//        imshow("img_proc", img_proc);
-//        imshow("dst", dst);
-//        waitKey(0);
-//    }
+ 
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
-
-// OSTU算法求出阈值
-int  Otsu(unsigned char* pGrayImg , int iWidth , int iHeight)
-{
-    if((pGrayImg==0)||(iWidth<=0)||(iHeight<=0))return -1;
-    int ihist[256];
-    int thresholdValue=0; // „–÷µ
-    int n, n1, n2 ;
-    double m1, m2, sum, csum, fmax, sb;
-    int i,j,k;
-    memset(ihist, 0, sizeof(ihist));
-    n=iHeight*iWidth;
-    sum = csum = 0.0;
-    fmax = -1.0;
-    n1 = 0;
-    for(i=0; i < iHeight; i++)
-    {
-        for(j=0; j < iWidth; j++)
-        {
-            ihist[*pGrayImg]++;
-            pGrayImg++;
-        }
-    }
-    pGrayImg -= n;
-    for (k=0; k <= 255; k++)
-    {
-        sum += (double) k * (double) ihist[k];
-    }
-    for (k=0; k <=255; k++)
-    {
-        n1 += ihist[k];
-        if(n1==0)continue;
-        n2 = n - n1;
-        if(n2==0)break;
-        csum += (double)k *ihist[k];
-        m1 = csum/n1;
-        m2 = (sum-csum)/n2;
-        sb = (double) n1 *(double) n2 *(m1 - m2) * (m1 - m2);
-        if (sb > fmax)
-        {
-            fmax = sb;
-            thresholdValue = k;
-        }
-    }
-    return(thresholdValue);
-}
+ 
 
 @end
