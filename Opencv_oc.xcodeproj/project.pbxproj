@@ -20,6 +20,7 @@
 		169FAF6F1F69087F00CB358C /* Opencv_ocTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 169FAF6E1F69087F00CB358C /* Opencv_ocTests.m */; };
 		169FAF7A1F69087F00CB358C /* Opencv_ocUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 169FAF791F69087F00CB358C /* Opencv_ocUITests.m */; };
 		169FAF8D1F69294100CB358C /* UIImage+fixOrientation.m in Sources */ = {isa = PBXBuildFile; fileRef = 169FAF8C1F69294100CB358C /* UIImage+fixOrientation.m */; };
+		16D9331C1F85C8D800C3E3D6 /* UIImage+CVMat.mm in Sources */ = {isa = PBXBuildFile; fileRef = 16D9331B1F85C8D800C3E3D6 /* UIImage+CVMat.mm */; };
 		4FE7923AC33C23A97A4772A0 /* Pods_Opencv_oc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F565F608B703CA16FD93C1B6 /* Pods_Opencv_oc.framework */; };
 /* End PBXBuildFile section */
 
@@ -65,6 +66,8 @@
 		169FAF7B1F69087F00CB358C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		169FAF8B1F69294100CB358C /* UIImage+fixOrientation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIImage+fixOrientation.h"; sourceTree = "<group>"; };
 		169FAF8C1F69294100CB358C /* UIImage+fixOrientation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIImage+fixOrientation.m"; sourceTree = "<group>"; };
+		16D9331A1F85C8D800C3E3D6 /* UIImage+CVMat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIImage+CVMat.h"; sourceTree = "<group>"; };
+		16D9331B1F85C8D800C3E3D6 /* UIImage+CVMat.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = "UIImage+CVMat.mm"; sourceTree = "<group>"; };
 		2E9E3A6E06EEA4D6A5FE048E /* Pods-Opencv_oc.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Opencv_oc.release.xcconfig"; path = "Pods/Target Support Files/Pods-Opencv_oc/Pods-Opencv_oc.release.xcconfig"; sourceTree = "<group>"; };
 		405310C8954D4F5255CA75BE /* Pods-Opencv_oc.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Opencv_oc.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Opencv_oc/Pods-Opencv_oc.debug.xcconfig"; sourceTree = "<group>"; };
 		F565F608B703CA16FD93C1B6 /* Pods_Opencv_oc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Opencv_oc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -172,6 +175,8 @@
 			children = (
 				169FAF8B1F69294100CB358C /* UIImage+fixOrientation.h */,
 				169FAF8C1F69294100CB358C /* UIImage+fixOrientation.m */,
+				16D9331A1F85C8D800C3E3D6 /* UIImage+CVMat.h */,
+				16D9331B1F85C8D800C3E3D6 /* UIImage+CVMat.mm */,
 			);
 			path = ImageCategory;
 			sourceTree = "<group>";
@@ -377,6 +382,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1614CE7C1F7B3DF50013DC1E /* RectReviseViewController.mm in Sources */,
+				16D9331C1F85C8D800C3E3D6 /* UIImage+CVMat.mm in Sources */,
 				169FAF5A1F69087F00CB358C /* ViewController.mm in Sources */,
 				169FAF651F69087F00CB358C /* main.m in Sources */,
 				169FAF8D1F69294100CB358C /* UIImage+fixOrientation.m in Sources */,

@@ -8,13 +8,19 @@
 
 #import "ViewController.h"
 //#import "BlocksKit.h"
+#include <stdio.h>
+#include <stdlib.h>
 #import "UIImage+fixOrientation.h"
+#import "RectReviseViewController.h"
 //#import "UIImagePickerController+BlocksKit.h"
 #import <opencv2/opencv.hpp>
+#import "UIImage+CVMat.h"
+
 using namespace cv;
 using namespace std;
-
-
+#define ABS(a) ({typeof(a) _a = (a); _a < 0 ? -_a : _a; })
+#define P_WIDTH    1280
+#define P_HEIGHT 800
 
 @interface ViewController () <UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 @property(strong,nonatomic) UIImagePickerController *picker;
@@ -23,19 +29,91 @@ using namespace std;
 
 @implementation ViewController
 
+-(IBAction)push:(id)sender{
+//    RectReviseViewController* vc = UIStoryboard.
+}
+
+double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0)
+{
+    double dx1 = pt1.x - pt0.x;
+    double dy1 = pt1.y - pt0.y;
+    double dx2 = pt2.x - pt0.x;
+    double dy2 = pt2.y - pt0.y;
+    double bleh = atan(dy1/dx1)-atan(dy2/dx2);
+    //std::cout << bleh << std::endl;
+    return bleh;
+}
+
+
+ bool myfunction(std::vector<cv::Point> i, std::vector<cv::Point> j) {
+    
+    std::vector<cv::Point> ponto;
+    std::vector<cv::Point> ponto1;
+    
+    double peri = cv::arcLength(i, true);
+    cv::approxPolyDP(i, ponto, 0.02 * peri, true);
+
+    double peri1 = cv::arcLength(j, true);
+    cv::approxPolyDP(j, ponto1, 0.02 * peri1, true);
+    
+    return cv::contourArea(ponto) > cv::contourArea(ponto1);
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     [_btn addTarget:self action:@selector(click) forControlEvents:UIControlEventTouchUpInside];
     UIImage *selectImage = [_originImageView.image fixOrientation];
-
-    Mat preProcessImage =  [self preProcess:selectImage];
+    // loading the image
+    Mat img =  [UIImage cvMatFromUIImage:selectImage];
+    Mat imgGrayscale;
+    Mat imgBlurred;
+    Mat imgCanny;
+    Mat dil;
+    vector<vector<cv::Point>> contours;
     
-//    [self findMaxPolygon:preProcessImage];
-        self.imageView.image = [self UIImageFromCVMat:preProcessImage];
+    cvtColor(img, imgGrayscale, CV_BGR2GRAY);
+    GaussianBlur(imgGrayscale,imgBlurred,cv::Size(5, 5),1.8);
+    
+    Canny(imgBlurred,imgCanny,50,100);
+    findContours(imgCanny, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+    vector<cv::Point> ponto;
+    sort(contours.begin(), contours.end(), myfunction);
+    for (int i = 0; i < contours.size(); i++) {
+        
+        double peri = arcLength(contours[i], true);
+        
+        approxPolyDP(contours[i], ponto, 0.02 * peri, true);
+        vector<vector<cv::Point>> bosta;
+        
+        printf("abacate %f   %ld\n", contourArea(ponto), ponto.size());
+        bosta.push_back(ponto);
+        Scalar color = Scalar(0, 0, 255);
+        drawContours(img, bosta, 0, color, 3);
+        break;
+        
+    }
+    
+    
+//    Mat preProcessImage =  [self preProcess:selectImage];
+    
+//    Mat maxImage  = [self findMaxPolygon:[self cvMatFromUIImage:selectImage]];
+    
                             // [self UIImageFromCVMat:preProcessImage]  ;
+   
+    self.imageView.image = [UIImage UIImageFromCVMat:img];
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
+                                                         NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
 
+    NSString* path1 = [documentsDirectory stringByAppendingPathComponent:
+                       [NSString stringWithFormat: @"test9.jpg"] ];
+    NSData* data1 = UIImageJPEGRepresentation(self.imageView.image , 0.9);
+    [data1 writeToFile:path1 atomically:YES];
+    NSLog(@"%@",path1);
     
 }
+
 
 -(void)click{
     _picker = [[UIImagePickerController alloc] init];
@@ -61,7 +139,7 @@ using namespace std;
     // 找面积最大的外接四边形的四个顶点
 //   Mat dingdian =  [weakSelf findMaxPolygon:preProcessImage];
     
-    weakSelf.imageView.image = [weakSelf UIImageFromCVMat:preProcessImage]  ;
+    weakSelf.imageView.image = [UIImage UIImageFromCVMat:preProcessImage]  ;
     
     NSLog(@"%ld",(long)weakSelf.imageView.image.imageOrientation);  // 0
     weakSelf.label2.text = [NSString stringWithFormat:@"%ld",(long)weakSelf.imageView.image.imageOrientation];
@@ -72,79 +150,139 @@ using namespace std;
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
-// 找到图像上面积最大的外接四边形的四个顶点
--(vector<cv::Point>)findMaxPolygon:(Mat)image{
-    Mat imageCopy  = image.clone();
-    vector<vector<cv::Point> > contours  = [self findContours:imageCopy external:YES];
-    NSLog(@"size------------%lu",contours.size());
+// 找到图像上面积最大的外接四边形的四个顶点 vector<cv::Point>
+-(Mat)findMaxPolygon:(Mat)image{  // Mat
     
-    if (contours.size() == 0)
-        return image;
     
-    double maxArea = 0;
-    vector<cv::Point> maxContour;
-    for(size_t i = 0; i < contours.size(); i++)
-    {
-        double area = cv::contourArea(contours[i]);
-        if (area > maxArea)
-        {
-            maxArea = area;
-            maxContour = contours[i];
+    Mat src,gray,bin;
+    src = image;
+    vector< vector<cv::Point> > contours;
+    vector<vector<cv::Point>> squares;
+    
+    vector<vector<cv::Point> > poly;
+    //cv::Point2f src_pt[4];
+    cv::Point2f dst_pt[]={
+        cv::Point2f( 0.0, 0.0),
+        cv::Point2f((P_WIDTH-1)/2, 0),
+        cv::Point2f((P_WIDTH-1)/2 , (P_HEIGHT-1)/2),
+        cv::Point2f(0, (P_HEIGHT-1)/2)};
+    
+//    const int idx=-1;
+//    const int thick=2;
+    vector<cv::Vec4i> hierarchy;
+    vector<cv::Point> approx;
+    cv::cvtColor(src, gray, CV_BGR2GRAY);
+    cv::threshold(gray, bin, 100, 255, cv::THRESH_BINARY|cv::THRESH_OTSU);
+    
+    //収縮・膨張
+    cv::erode(bin, bin, cv::Mat(), cv::Point(-1,-1), 3);
+    cv::erode(bin, bin, cv::Mat(), cv::Point(-1,-1), 3);
+    cv::dilate(bin, bin, cv::Mat(), cv::Point(-1,-1), 1);
+    cv::dilate(bin, bin, cv::Mat(), cv::Point(-1,-1), 1);
+ 
+
+//    Mat imageCopy  = image.clone();
+    cv::findContours(bin, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
+    
+//    vector<vector<cv::Point> > contours  = [self findContours:imageCopy external:YES];
+//    NSLog(@"size------------%lu",contours.size());
+    
+   cv::Point2f src_pt[4];
+//    cap >> src ;
+//    if (contours.size() == 0)
+//        return ; //image
+    for (unsigned int j = 0; j < contours.size(); j++){
+        approx = contours[j];
+        //輪郭を近似する
+        cv::approxPolyDP(contours[j], approx, cv::arcLength(contours[j], true)*0.02, true);
+        //頂点が4つの場合
+        if (approx.size() == 4 && hierarchy[j][2] != -1){
+            //4つの頂点を描く
+            for (unsigned int k = 0; k < approx.size(); k++){
+                cv::circle(src, approx[k], 5,  CV_RGB(255,0,0), 2, 8, 0);
+            }
+            /*外枠取得用*/
+            src_pt[0] = cv::Point2f(approx[0].x,approx[0].y);
+            src_pt[1] = cv::Point2f(approx[1].x,approx[1].y);
+            src_pt[2] = cv::Point2f(approx[2].x,approx[2].y);
+            src_pt[3] = cv::Point2f(approx[3].x,approx[3].y);
+            if(approx[0].x > approx[2].x && approx[0].y > approx[2].y){
+                src_pt[0] = cv::Point2f(approx[2].x,approx[2].y);
+                src_pt[1] = cv::Point2f(approx[1].x,approx[1].y);
+                src_pt[2] = cv::Point2f(approx[0].x,approx[0].y);
+                src_pt[3] = cv::Point2f(approx[3].x,approx[3].y);
+            }
+            else if(approx[0].x < approx[2].x && approx[0].y > approx[2].y){
+                src_pt[0] = cv::Point2f(approx[1].x,approx[1].y);
+                src_pt[1] = cv::Point2f(approx[0].x,approx[0].y);
+                src_pt[2] = cv::Point2f(approx[3].x,approx[3].y);
+                src_pt[3] = cv::Point2f(approx[2].x,approx[2].y);
+            }
+            else if(approx[0].x < approx[2].x && approx[0].y < approx[2].y){
+                src_pt[0] = cv::Point2f(approx[0].x,approx[0].y);
+                src_pt[1] = cv::Point2f(approx[3].x,approx[3].y);
+                src_pt[2] = cv::Point2f(approx[2].x,approx[2].y);
+                src_pt[3] = cv::Point2f(approx[1].x,approx[1].y);
+            }
+            else if(approx[0].x > approx[2].x && approx[0].y < approx[2].y){
+                src_pt[0] = cv::Point2f(approx[3].x,approx[3].y);
+                src_pt[1] = cv::Point2f(approx[2].x,approx[2].y);
+                src_pt[2] = cv::Point2f(approx[1].x,approx[1].y);
+                src_pt[3] = cv::Point2f(approx[0].x,approx[0].y);
+            }
         }
     }
-    
-    // 将轮廓转为矩形框
-    cv::Rect maxRect = cv::boundingRect(maxContour);
-    
-    // 显示连通域
-    cv::Mat result1, result2;
 
-    image.copyTo(result1);
-    image.copyTo(result2);
-    
-    for (size_t i = 0; i < contours.size(); i++)
-    {
-        cv::Rect r = cv::boundingRect(contours[i]);
-        cv::rectangle(result1, r, cv::Scalar(255));
+    if(src_pt[0].x != 0){
+        // homography 行列を計算
+        cv::Mat homography_matrix = cv::getPerspectiveTransform(src_pt, dst_pt);
+        
+        // 変換
+        cv::warpPerspective( src, src, homography_matrix,src.size());
     }
-    cv::rectangle(result2, maxRect, cv::Scalar(255));
-    return result2;
+    return bin;
+    
+//    sort(contours.begin(), contours.end(), conter_area_cmp);
  
 #pragma mark - sort ???
     
-    sort(contours.begin(), contours.end(), conter_area_cmp);
-    float alpha = 0.0001;
-    
-    while (1) {
-        vector<cv::Point> approx = [self approxPolyDP:contours[0] alpha:alpha];
-        long size = approx.size();
-        NSLog(@"%ld",size);
-        if (size > 50) {
-            alpha *= 1.5;
-        }
-        else if(size > 10){
-            alpha *= 1.2;
-        }
-        else if(size > 4){
-                //
-            alpha *= 1.1;
-        }
-        else if (size == 4){
-
-            break;
-        }
-        else{
-            NSLog(@"error");
-        }
-
-
-    }
+//    float alpha = 0.0001;
+//
+//    while (1) {
+//        vector<cv::Point> approx = [self approxPolyDP:contours[0] alpha:alpha];
+//        long size = approx.size();
+//        NSLog(@"%ld",size);
+//        if (size > 50) {
+//            alpha *= 1.5;
+//        }
+//        else if(size > 10){
+//            alpha *= 1.2;
+//        }
+//        else if(size > 4){
+//                //
+//            alpha *= 1.1;
+//        }
+//        else if (size == 4){
+//
+//            break;
+//        }
+//        else{
+//            NSLog(@"error");
+//        }
+//
+//
+//    }
+   
 //    return  approx
  
 }
 
 
-//(void)is_close()
+void is_close(vector<cv::Point> p1,vector<cv::Point> p2,int d=10 ){
+//    if ((std::abs(p1[0] - p2[0]) < d) && (std::abs(p1[1]-p2[1]) < d)) {
+//
+//    }
+}
 
 -(void)merge:(vector<vector<cv::Point> >)approx{
     vector<vector<cv::Point> > approxCopy = approx;
@@ -187,7 +325,7 @@ int conter_area_cmp(const vector<cv::Point> &a, const vector<cv::Point> &b) {
 // 预处理
 -(Mat)preProcess:(UIImage*)selectImage{
     
-    Mat matImage = [self  cvMatFromUIImage:selectImage];
+    Mat matImage = [UIImage  cvMatFromUIImage:selectImage];
 
     // 灰度
     Mat matGrey;
@@ -197,7 +335,7 @@ int conter_area_cmp(const vector<cv::Point> &a, const vector<cv::Point> &b) {
     Mat matBlur;
     GaussianBlur(matGrey, matBlur, cv::Size(5,5), 0);
     
-    int block_size = 5;
+    int block_size = 3;
 
     Mat matBinary;
 //    IplImage blur = matBlur;
@@ -222,117 +360,8 @@ int conter_area_cmp(const vector<cv::Point> &a, const vector<cv::Point> &b) {
     
 }
 
-#pragma mark - opencv method
-- (Mat)cvMatFromUIImage:(UIImage *)image
-{
-    CGColorSpaceRef colorSpace = CGImageGetColorSpace(image.CGImage);
-    CGFloat cols = image.size.width;
-    CGFloat rows = image.size.height;
-    
-    Mat cvMat(rows, cols, CV_8UC4); // 8 bits per component, 4 channels
-    
-    CGContextRef contextRef = CGBitmapContextCreate(cvMat.data,                 // Pointer to  data
-                                                    cols,                       // Width of bitmap
-                                                    rows,                       // Height of bitmap
-                                                    8,                          // Bits per component
-                                                    cvMat.step[0],              // Bytes per row
-                                                    colorSpace,                 // Colorspace
-                                                    kCGImageAlphaNoneSkipLast |
-                                                    kCGBitmapByteOrderDefault); // Bitmap info flags
-    
-    CGContextDrawImage(contextRef, CGRectMake(0, 0, cols, rows), image.CGImage);
-    CGContextRelease(contextRef);
-    CGColorSpaceRelease(colorSpace);
-    
-    return cvMat;
-}
-
--(UIImage *)UIImageFromCVMat:(Mat)cvMat
-{
-    NSData *data = [NSData dataWithBytes:cvMat.data length:cvMat.elemSize()*cvMat.total()];
-    CGColorSpaceRef colorSpace;
-    
-    if (cvMat.elemSize() == 1) {
-        colorSpace = CGColorSpaceCreateDeviceGray();
-    } else {
-        colorSpace = CGColorSpaceCreateDeviceRGB();
-    }
-    
-    CGDataProviderRef provider = CGDataProviderCreateWithCFData((__bridge CFDataRef)data);
-    
-    // Creating CGImage from Mat
-    CGImageRef imageRef = CGImageCreate(cvMat.cols,                                 //width
-                                        cvMat.rows,                                 //height
-                                        8,                                          //bits per component
-                                        8 * cvMat.elemSize(),                       //bits per pixel
-                                        cvMat.step[0],                            //bytesPerRow
-                                        colorSpace,                                 //colorspace
-                                        kCGImageAlphaNone|kCGBitmapByteOrderDefault,// bitmap info
-                                        provider,                                   //CGDataProviderRef
-                                        NULL,                                       //decode
-                                        false,                                      //should interpolate
-                                        kCGRenderingIntentDefault                   //intent
-                                        );
-    
-    
-    // Getting UIImage from CGImage
-    UIImage *finalImage = [UIImage imageWithCGImage:imageRef];
-    CGImageRelease(imageRef);
-    CGDataProviderRelease(provider);
-    CGColorSpaceRelease(colorSpace);
-    
-    return finalImage;
-}
-
-
 
 #pragma mark - custom method
-
-// OSTU算法求出阈值
-int  Otsu1(unsigned char* pGrayImg , int iWidth , int iHeight)
-{
-    if((pGrayImg==0)||(iWidth<=0)||(iHeight<=0))return -1;
-    int ihist[256];
-    int thresholdValue=0; // „–÷µ
-    int n, n1, n2 ;
-    double m1, m2, sum, csum, fmax, sb;
-    int i,j,k;
-    memset(ihist, 0, sizeof(ihist));
-    n=iHeight*iWidth;
-    sum = csum = 0.0;
-    fmax = -1.0;
-    n1 = 0;
-    for(i=0; i < iHeight; i++)
-    {
-        for(j=0; j < iWidth; j++)
-        {
-            ihist[*pGrayImg]++;
-            pGrayImg++;
-        }
-    }
-    pGrayImg -= n;
-    for (k=0; k <= 255; k++)
-    {
-        sum += (double) k * (double) ihist[k];
-    }
-    for (k=0; k <=255; k++)
-    {
-        n1 += ihist[k];
-        if(n1==0)continue;
-        n2 = n - n1;
-        if(n2==0)break;
-        csum += (double)k *ihist[k];
-        m1 = csum/n1;
-        m2 = (sum-csum)/n2;
-        sb = (double) n1 *(double) n2 *(m1 - m2) * (m1 - m2);
-        if (sb > fmax)
-        {
-            fmax = sb;
-            thresholdValue = k;
-        }
-    }
-    return(thresholdValue);
-}
 
 
 #pragma mark -
@@ -383,68 +412,7 @@ double getSpacePointToPoint(cv::Point p1, cv::Point p2)
     int b = p1.y-p2.y;
     return sqrt(a * a + b * b);
 }
-
-/**
- 两直线的交点
  
- @param a 线段1
- @param b 线段2
- @return 交点
- */
-//cv::Point2f computeIntersect(cv::Vec4i a, cv::Vec4i b)
-//{
-//    int x1 = a[0], y1 = a[1], x2 = a[2], y2 = a[3], x3 = b[0], y3 = b[1], x4 = b[2], y4 = b[3];
-//
-//    if (float d = ((float)(x1 - x2) * (y3 - y4)) - ((y1 - y2) * (x3 - x4)))
-//    {
-//        cv::Point2f pt;
-//        pt.x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / d;
-//        pt.y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / d;
-//        return pt;
-//    }
-//    else
-//        return cv::Point2f(-1, -1);
-//}
-
-/**
- 对多个点按顺时针排序
- 
- @param corners 点的集合
- */
-//void sortCorners(std::vector<cv::Point2f>& corners)
-//{
-//    if (corners.size() == 0) return;
-//    //先延 X轴排列
-//    cv::Point pl = corners[0];
-//    int index = 0;
-//    for (int i = 1; i < corners.size(); i++)
-//    {
-//        cv::Point point = corners[i];
-//        if (pl.x > point.x)
-//        {
-//            pl = point;
-//            index = i;
-//        }
-//    }
-//    corners[index] = corners[0];
-//    corners[0] = pl;
-//
-//    cv::Point lp = corners[0];
-//    for (int i = 1; i < corners.size(); i++)
-//    {
-//        for (int j = i+1; j<corners.size(); j++)
-//        {
-//            cv::Point point1 = corners[i];
-//            cv::Point point2 = corners[j];
-//            if ((point1.y-lp.y*1.0)/(point1.x-lp.x)>(point2.y-lp.y*1.0)/(point2.x-lp.x))
-//            {
-//                cv::Point temp = point1;
-//                corners[i] = corners[j];
-//                corners[j] = temp;
-//            }
-//        }
-//    }
-//}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

@@ -8,10 +8,16 @@
 
 #import <UIKit/UIKit.h>
 
+#import <opencv2/opencv.hpp>
+
+
+using namespace cv;
 @interface RectReviseViewController : UIViewController
 
 @property(weak,nonatomic) IBOutlet UIButton* btn;
 @property(weak,nonatomic) IBOutlet UIImageView* originImageView;
 @property(weak,nonatomic) IBOutlet UIImageView* imageView;
+
+-(Mat)scan:(String)file debug:(bool)debug ;
 
 @end

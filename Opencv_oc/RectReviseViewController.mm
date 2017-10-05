@@ -8,11 +8,8 @@
 
 #import "RectReviseViewController.h"
 #import "UIImage+fixOrientation.h"
+#import "UIImage+CVMat.h"
 
-#import <opencv2/opencv.hpp>
-
-
-using namespace cv;
 using namespace std;
 
 @interface RectReviseViewController ()<UIImagePickerControllerDelegate,UINavigationControllerDelegate>
@@ -70,23 +67,78 @@ void sortCorners(std::vector<cv::Point2f>& corners,cv::Point2f center)
     
 }
 
+
+
+bool myfunction3(std::vector<cv::Point> i, std::vector<cv::Point> j) {
+    
+    std::vector<cv::Point> ponto;
+    std::vector<cv::Point> ponto1;
+    
+    double peri = cv::arcLength(i, true);
+    cv::approxPolyDP(i, ponto, 0.02 * peri, true);
+    
+    double peri1 = cv::arcLength(j, true);
+    cv::approxPolyDP(j, ponto1, 0.02 * peri1, true);
+    
+    return cv::contourArea(ponto) > cv::contourArea(ponto1);
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     [_btn addTarget:self action:@selector(click) forControlEvents:UIControlEventTouchUpInside];
     self.imageView.contentMode =  UIViewContentModeScaleAspectFit;
     
+    UIImage *selectImage = [_originImageView.image fixOrientation];
+    // loading the image
+    Mat img =  [UIImage cvMatFromUIImage:selectImage];
+    Mat imgGrayscale;
+    Mat imgBlurred;
+    Mat imgCanny;
+    Mat dil;
+    vector<vector<cv::Point>> contours;
+    
+    cvtColor(img, imgGrayscale, CV_BGR2GRAY);
+    GaussianBlur(imgGrayscale,imgBlurred,cv::Size(5, 5),1.8);
+    
+    Canny(imgBlurred,imgCanny,50,100);
+    findContours(imgCanny, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+    vector<cv::Point> ponto;
+    sort(contours.begin(), contours.end(), myfunction3);
+    for (int i = 0; i < contours.size(); i++) {
+        
+        double peri = arcLength(contours[i], true);
+        
+        approxPolyDP(contours[i], ponto, 0.02 * peri, true);
+        vector<vector<cv::Point>> bosta;
+        
+        printf("abacate %f   %ld\n", contourArea(ponto), ponto.size());
+        bosta.push_back(ponto);
+        Scalar color = Scalar(0, 0, 255);
+        drawContours(img, bosta, 0, color, 3);
+        break;
+        
+    }
+    
+    self.originImageView.image = [UIImage UIImageFromCVMat:img];
+    
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
                                                          NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
-    NSString* path = [documentsDirectory stringByAppendingPathComponent:
-                      [NSString stringWithFormat: @"test.jpg"] ];
-    NSLog(@"%@",path);
-    NSData* data = UIImageJPEGRepresentation([self.originImageView.image fixOrientation], 0.9);
-    [data writeToFile:path atomically:YES];
-
     
-    Mat dst =  [self scan:[path UTF8String] debug:true];
-    self.imageView.image = [self UIImageFromCVMat:dst];
+    NSString* path1 = [documentsDirectory stringByAppendingPathComponent:
+                       [NSString stringWithFormat: @"test9.jpg"] ];
+    NSData* data1 = UIImageJPEGRepresentation(self.originImageView.image , 0.9);
+    [data1 writeToFile:path1 atomically:YES];
+    NSLog(@"%@",path1);
+    
+    Mat dst =  [self scan:[path1 UTF8String] debug:true];
+    self.imageView.image = [UIImage UIImageFromCVMat:dst];
+    
+    NSString* path2 = [documentsDirectory stringByAppendingPathComponent:
+                      [NSString stringWithFormat: @"test10.jpg"] ];
+    NSData* data2 = UIImageJPEGRepresentation(self.imageView.image , 0.9);
+    [data2 writeToFile:path2 atomically:YES];
+
     // Do any additional setup after loading the view.
 }
 
@@ -100,6 +152,7 @@ void sortCorners(std::vector<cv::Point2f>& corners,cv::Point2f center)
     [self presentViewController:_picker animated:YES completion:nil];
 }
 
+/*
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
 //    __weak typeof(self) weakSelf = self;
     
@@ -117,8 +170,50 @@ void sortCorners(std::vector<cv::Point2f>& corners,cv::Point2f center)
     [data writeToFile:path atomically:YES];
 
    Mat dst =  [self scan:[path UTF8String] debug:true];
+    
     self.imageView.image = [self UIImageFromCVMat:dst];
+     
     [picker dismissViewControllerAnimated:YES completion:nil];
+}
+*/
+
+
+// 预处理
+-(Mat)preProcess:(UIImage*)selectImage{
+    
+    Mat matImage = [UIImage  cvMatFromUIImage:selectImage];
+    
+    // 灰度
+    Mat matGrey;
+    cvtColor(matImage, matGrey, CV_BGR2GRAY);
+    
+    // 高斯滤波
+    Mat matBlur;
+    GaussianBlur(matGrey, matBlur, cv::Size(5,5), 0);
+    
+    int block_size = 5;
+    
+    Mat matBinary;
+    //    IplImage blur = matBlur;
+    
+    //    unsigned char* dataImage = (unsigned char*)blur.imageData;
+    //    int threshold = Otsu1(dataImage, blur.width, blur.height);
+    //    printf("阈值：%d\n",threshold);
+    //    cv::threshold(matGrey, matBinary, threshold, 255, THRESH_BINARY);
+    //    std::vector<cv::Vec4i> lines;
+    
+    
+    
+    // 二值化
+    adaptiveThreshold(matBlur, matBinary, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, block_size, 5) ;
+    Mat kernel = getStructuringElement(MORPH_RECT, cv::Size(block_size,block_size));
+    
+    // 形态学运算函数，闭运算
+    Mat matClose;
+    morphologyEx(matBinary, matClose, MORPH_CLOSE, kernel,cv::Point(-1,-1),3);
+    
+    return matClose;
+    
 }
 
 
@@ -126,111 +221,6 @@ void sortCorners(std::vector<cv::Point2f>& corners,cv::Point2f center)
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
-
-
-
-// 预处理
--(cv::Mat)preProcess:(UIImage*)selectImage{
-    
-    cv::Mat matImage = [self  cvMatFromUIImage:selectImage];
-    
-    // 灰度
-    cv::Mat matGrey;
-    cv::cvtColor(matImage, matGrey, CV_BGR2GRAY);
-    
-    // 高斯滤波
-    cv::Mat matBlur;
-    cv::GaussianBlur(matGrey, matBlur, cv::Size(5,5), 0);
-    
-#pragma mark - // block_size ???
-    
-    int block_size = 5;
-    
-    //    int width = selectImage.size.width ;
-    //    int height = selectImage.size.height;
-    //    block_size  =  MAX(MAX(width / 500 * 2 +1, height / 500 * 2 + 1), 3) ;
-    //    NSLog(@"%d",block_size);
-    
-    cv::Mat matBinary;
-    //    IplImage blur = matBlur;
-    //    unsigned char* dataImage = (unsigned char*)blur.imageData;
-    //    int threshold = Otsu(dataImage, blur.width, blur.height);
-    //    printf("阈值：%d\n",threshold);
-    //    cv::threshold(matBlur, matBinary, threshold, 255, cv::THRESH_BINARY);
-    
-    // 二值化
-    cv::adaptiveThreshold(matBlur, matBinary, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, block_size, 5) ;
-    cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(block_size,block_size));
-    
-    // 形态学运算函数，闭运算
-    cv::Mat matClose;
-    cv::morphologyEx(matBinary, matClose, cv::MORPH_CLOSE, kernel,cv::Point(-1,-1),3);
-    
-    return matClose;
-    
-}
-
-#pragma mark - opencv method
-- (cv::Mat)cvMatFromUIImage:(UIImage *)image
-{
-    CGColorSpaceRef colorSpace = CGImageGetColorSpace(image.CGImage);
-    CGFloat cols = image.size.width;
-    CGFloat rows = image.size.height;
-    
-    cv::Mat cvMat(rows, cols, CV_8UC4); // 8 bits per component, 4 channels
-    
-    CGContextRef contextRef = CGBitmapContextCreate(cvMat.data,                 // Pointer to  data
-                                                    cols,                       // Width of bitmap
-                                                    rows,                       // Height of bitmap
-                                                    8,                          // Bits per component
-                                                    cvMat.step[0],              // Bytes per row
-                                                    colorSpace,                 // Colorspace
-                                                    kCGImageAlphaNoneSkipLast |
-                                                    kCGBitmapByteOrderDefault); // Bitmap info flags
-    
-    CGContextDrawImage(contextRef, CGRectMake(0, 0, cols, rows), image.CGImage);
-    CGContextRelease(contextRef);
-    CGColorSpaceRelease(colorSpace);
-    
-    return cvMat;
-}
-
--(UIImage *)UIImageFromCVMat:(cv::Mat)cvMat
-{
-    NSData *data = [NSData dataWithBytes:cvMat.data length:cvMat.elemSize()*cvMat.total()];
-    CGColorSpaceRef colorSpace;
-    
-    if (cvMat.elemSize() == 1) {
-        colorSpace = CGColorSpaceCreateDeviceGray();
-    } else {
-        colorSpace = CGColorSpaceCreateDeviceRGB();
-    }
-    
-    CGDataProviderRef provider = CGDataProviderCreateWithCFData((__bridge CFDataRef)data);
-    
-    // Creating CGImage from cv::Mat
-    CGImageRef imageRef = CGImageCreate(cvMat.cols,                                 //width
-                                        cvMat.rows,                                 //height
-                                        8,                                          //bits per component
-                                        8 * cvMat.elemSize(),                       //bits per pixel
-                                        cvMat.step[0],                            //bytesPerRow
-                                        colorSpace,                                 //colorspace
-                                        kCGImageAlphaNone|kCGBitmapByteOrderDefault,// bitmap info
-                                        provider,                                   //CGDataProviderRef
-                                        NULL,                                       //decode
-                                        false,                                      //should interpolate
-                                        kCGRenderingIntentDefault                   //intent
-                                        );
-    
-    
-    // Getting UIImage from CGImage
-    UIImage *finalImage = [UIImage imageWithCGImage:imageRef];
-    CGImageRelease(imageRef);
-    CGDataProviderRelease(provider);
-    CGColorSpaceRelease(colorSpace);
-    
-    return finalImage;
-}
 
 
 
@@ -299,7 +289,7 @@ Point2f computeIntersect(Line l1, Line l2) {
     // get edges of the image
     Mat gray, canny,bina;
     cvtColor(img_proc, gray, CV_BGR2GRAY);
- 
+//    threshold(gray, bina, 100, 255, THRESH_BINARY|THRESH_OTSU);
     getCanny(gray, canny);
     
     // extract lines from the edge image

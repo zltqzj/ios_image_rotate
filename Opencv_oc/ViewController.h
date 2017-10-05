@@ -17,5 +17,6 @@
 @property(weak,nonatomic) IBOutlet UILabel* label;
 @property(weak,nonatomic) IBOutlet UILabel* label2;
 
+-(IBAction)push:(id)sender;
 @end
 
