@@ -28,13 +28,21 @@ using namespace std;
     [self operateImage:selectImage];
 }
 
-
 -(void)click{
-    _picker = [[UIImagePickerController alloc] init];
-    _picker.sourceType = UIImagePickerControllerSourceTypeCamera;
-    _picker.allowsEditing = NO;
-    _picker.delegate = self;
-    [self presentViewController:_picker animated:YES completion:nil];
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        _picker = [[UIImagePickerController alloc] init];
+        _picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+        _picker.allowsEditing = NO;
+        _picker.delegate = self;
+        [self presentViewController:_picker animated:YES completion:nil];
+    }
+    else{
+        NSLog(@"设备不支持相机");
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"提示" message:@"该设备不支持相机" preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+        [alertController addAction:okAction];
+        [self presentViewController:alertController animated:YES completion:nil];
+    }
 }
 
 
@@ -73,19 +81,19 @@ using namespace std;
                                                          NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
     
-    NSString* path1 = [documentsDirectory stringByAppendingPathComponent:
+    NSString* path_contour = [documentsDirectory stringByAppendingPathComponent:
                        [NSString stringWithFormat: @"test9.jpg"] ];
-    NSData* data1 = UIImageJPEGRepresentation(self.originImageView.image , 0.9);
-    [data1 writeToFile:path1 atomically:YES];
-    NSLog(@"%@",path1);
+    NSData* data_contour = UIImageJPEGRepresentation(self.originImageView.image , 0.9);
+    [data_contour writeToFile:path_contour atomically:YES];
+    NSLog(@"%@",path_contour);
     
-    Mat dst =  [self scan:[path1 UTF8String] debug:true];
+    Mat dst =  [self scan:[path_contour UTF8String] debug:true];
     self.imageView.image = [UIImage UIImageFromCVMat:dst];
     
-    NSString* path2 = [documentsDirectory stringByAppendingPathComponent:
+    NSString* revise_path = [documentsDirectory stringByAppendingPathComponent:
                        [NSString stringWithFormat: @"test10.jpg"] ];
-    NSData* data2 = UIImageJPEGRepresentation(self.imageView.image , 0.9);
-    [data2 writeToFile:path2 atomically:YES];
+    NSData* revise_data = UIImageJPEGRepresentation(self.imageView.image , 0.9);
+    [revise_data writeToFile:revise_path atomically:YES];
 }
 
 
@@ -93,6 +101,7 @@ using namespace std;
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
  
     UIImage *selectImage = [[info objectForKey:UIImagePickerControllerOriginalImage] fixOrientation];
+    self.originImageView.image = selectImage;
     [self operateImage:selectImage];
     [picker dismissViewControllerAnimated:YES completion:nil];
 

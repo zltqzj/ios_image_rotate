@@ -34,11 +34,21 @@ using namespace std;
 
 
 -(void)click{
-    _picker = [[UIImagePickerController alloc] init];
-    _picker.sourceType = UIImagePickerControllerSourceTypeCamera;
-    _picker.allowsEditing = NO;
-    _picker.delegate = self;
-    [self presentViewController:_picker animated:YES completion:nil];
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        _picker = [[UIImagePickerController alloc] init];
+        _picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+        _picker.allowsEditing = NO;
+        _picker.delegate = self;
+        [self presentViewController:_picker animated:YES completion:nil];
+    }
+    else{
+        NSLog(@"设备不支持相机");
+        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"提示" message:@"该设备不支持相机" preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+        [alertController addAction:okAction];
+        [self presentViewController:alertController animated:YES completion:nil];
+    }
+   
 }
 
 #pragma mark - imagepicker delegate
@@ -50,6 +60,7 @@ using namespace std;
     
     weakSelf.label.text = [NSString stringWithFormat:@"%@",dict[@"Orientation"]];
     UIImage *selectImage = [[info objectForKey:UIImagePickerControllerOriginalImage] fixOrientation];
+    self.originImageView.image = selectImage;
     [self operateImage:selectImage];
 
     [weakSelf.picker dismissViewControllerAnimated:YES completion:nil];
@@ -60,6 +71,15 @@ using namespace std;
 }
 
 #pragma custom method
+bool myfunction2(std::vector<cv::Point> i, std::vector<cv::Point> j) {
+    return cv::contourArea(i) > cv::contourArea(j);
+}
+bool myfunctionOrder(cv::Point2f i, cv::Point2f j) {
+    return i.y > j.y;
+}
+
+
+
 -(void)operateImage:(UIImage*)selectImage{
     //    UIImage *selectImage = [_originImageView.image fixOrientation];
     // loading the image
@@ -83,13 +103,17 @@ using namespace std;
         
         approxPolyDP(contours[i], ponto, 0.02 * peri, true);
         vector<vector<cv::Point>> bosta;
-        
-        printf("abacate %f   %ld\n", contourArea(ponto), ponto.size());
-        bosta.push_back(ponto);
-        Scalar color = Scalar(0, 0, 255);
-        drawContours(img, bosta, 0, color, 3);
-        break;
-        
+        if (ponto.size() == 4) {
+            printf("\nVIVA USTRA %d, %d\n", ponto[0].x, ponto[0].y);
+            printf("\nVIVA USTRA %d, %d\n", ponto[1].x, ponto[1].y);
+            printf("\nVIVA USTRA %d, %d\n", ponto[2].x, ponto[2].y);
+            printf("\nVIVA USTRA %d, %d\n", ponto[3].x, ponto[3].y);
+            printf("abacate %f   %ld\n", contourArea(ponto), ponto.size());
+            bosta.push_back(ponto);
+            Scalar color = Scalar(0, 0, 255);
+            drawContours(img, bosta, 0, color, 3);
+            break;
+        }
     }
     
     self.imageView.image = [UIImage UIImageFromCVMat:img];
@@ -98,11 +122,11 @@ using namespace std;
                                                          NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths objectAtIndex:0];
     
-    NSString* path1 = [documentsDirectory stringByAppendingPathComponent:
+    NSString* path_contours = [documentsDirectory stringByAppendingPathComponent:
                        [NSString stringWithFormat: @"test9.jpg"] ];
-    NSData* data1 = UIImageJPEGRepresentation(self.imageView.image , 0.9);
-    [data1 writeToFile:path1 atomically:YES];
-    NSLog(@"%@",path1);
+    NSData* data_contours = UIImageJPEGRepresentation(self.imageView.image , 0.9);
+    [data_contours writeToFile:path_contours atomically:YES];
+    NSLog(@"%@",path_contours);
 }
 
 // 多边形拟合，拟合精度为轮廓周长的alpha
