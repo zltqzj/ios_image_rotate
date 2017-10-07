@@ -10,7 +10,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
+        <!--轮廓检测-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" sceneMemberID="viewController">
@@ -70,7 +70,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <navigationItem key="navigationItem" id="U9d-ko-5sZ"/>
+                    <navigationItem key="navigationItem" title="轮廓检测" id="U9d-ko-5sZ"/>
                     <connections>
                         <outlet property="btn" destination="RF4-4N-rMd" id="Uu4-cz-giw"/>
                         <outlet property="imageView" destination="0fv-91-dv3" id="TX6-8b-6LG"/>
@@ -81,7 +81,7 @@
             </objects>
             <point key="canvasLocation" x="452" y="38"/>
         </scene>
-        <!--Rect Revise View Controller-->
+        <!--图片校正-->
         <scene sceneID="74O-5U-ur7">
             <objects>
                 <viewController id="z1A-wC-PVx" customClass="RectReviseViewController" sceneMemberID="viewController">
@@ -123,7 +123,7 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="ADa-6A-vpb"/>
                     </view>
-                    <navigationItem key="navigationItem" id="guI-xH-3Dl"/>
+                    <navigationItem key="navigationItem" title="图片校正" id="guI-xH-3Dl"/>
                     <connections>
                         <outlet property="btn" destination="mvo-xm-hlt" id="Lrd-Nd-9Gm"/>
                         <outlet property="imageView" destination="Lo1-Ap-yKE" id="jQF-fI-ktM"/>

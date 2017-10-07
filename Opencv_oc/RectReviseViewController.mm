@@ -10,78 +10,14 @@
 #import "UIImage+fixOrientation.h"
 #import "UIImage+CVMat.h"
 
+using namespace cv;
 using namespace std;
 
 @interface RectReviseViewController ()<UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 @property(strong,nonatomic) UIImagePickerController *picker;
-
 @end
 
 @implementation RectReviseViewController
-
-
-cv::Point2f center(0,0);
-
-cv::Point2f computeIntersect(cv::Vec4i a,cv::Vec4i b)
-{
-    int x1 = a[0],y1 = a[1],x2 = a[2],y2 = a[3],x3 = b[0],y3 = b[1],x4 = b[2],y4 = b[3];
-    
-    if (float d = ((float)(x1 - x2)*(y3 - y4)-(y1 - y2)*(x3 - x4)))
-    {
-        cv::Point2f pt;
-        pt.x = ((x1*y2 - y1*x2)*(x3 - x4) - (x1 - x2)*(x3*y4 - y3*x4))/d;
-        pt.y = ((x1*y2 - y1*x2)*(y3 - y4) - (y1 - y2)*(x3*y4 - y3*x4))/d;
-        return pt;
-    }
-    else
-        return cv::Point2f(-1,-1);
-}
-
-void sortCorners(std::vector<cv::Point2f>& corners,cv::Point2f center)
-{
-    std::vector<cv::Point2f> top,bot;
-    
-    for (unsigned int i =0;i< corners.size();i++)
-    {
-        if (corners[i].y<center.y)
-        {
-            top.push_back(corners[i]);
-        }
-        else
-        {
-            bot.push_back(corners[i]);
-        }
-    }
-    
-    cv::Point2f tl = top[0].x > top[1].x ? top[1] : top[0];
-    cv::Point2f tr = top[0].x > top[1].x ? top[0] : top[1];
-    cv::Point2f bl = bot[0].x > bot[1].x ? bot[1] : bot[0];
-    cv::Point2f br = bot[0].x > bot[1].x ? bot[0] : bot[1];
-    
-    corners.clear();
-    //注意以下存放顺序是顺时针，当时这里出错了，如果想任意顺序下文开辟的四边形矩阵注意对应
-    corners.push_back(tl);
-    corners.push_back(tr);
-    corners.push_back(br);
-    corners.push_back(bl);
-    
-}
-
-
-
-bool myfunction3(std::vector<cv::Point> i, std::vector<cv::Point> j) {
-    
-    std::vector<cv::Point> ponto;
-    std::vector<cv::Point> ponto1;
-    
-    double peri = cv::arcLength(i, true);
-    cv::approxPolyDP(i, ponto, 0.02 * peri, true);
-    
-    double peri1 = cv::arcLength(j, true);
-    cv::approxPolyDP(j, ponto1, 0.02 * peri1, true);
-    
-    return cv::contourArea(ponto) > cv::contourArea(ponto1);
-}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -89,7 +25,20 @@ bool myfunction3(std::vector<cv::Point> i, std::vector<cv::Point> j) {
     self.imageView.contentMode =  UIViewContentModeScaleAspectFit;
     
     UIImage *selectImage = [_originImageView.image fixOrientation];
-    // loading the image
+    [self operateImage:selectImage];
+}
+
+
+-(void)click{
+    _picker = [[UIImagePickerController alloc] init];
+    _picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+    _picker.allowsEditing = NO;
+    _picker.delegate = self;
+    [self presentViewController:_picker animated:YES completion:nil];
+}
+
+
+-(void)operateImage:(UIImage*)selectImage{
     Mat img =  [UIImage cvMatFromUIImage:selectImage];
     Mat imgGrayscale;
     Mat imgBlurred;
@@ -116,7 +65,6 @@ bool myfunction3(std::vector<cv::Point> i, std::vector<cv::Point> j) {
         Scalar color = Scalar(0, 0, 255);
         drawContours(img, bosta, 0, color, 3);
         break;
-        
     }
     
     self.originImageView.image = [UIImage UIImageFromCVMat:img];
@@ -135,144 +83,26 @@ bool myfunction3(std::vector<cv::Point> i, std::vector<cv::Point> j) {
     self.imageView.image = [UIImage UIImageFromCVMat:dst];
     
     NSString* path2 = [documentsDirectory stringByAppendingPathComponent:
-                      [NSString stringWithFormat: @"test10.jpg"] ];
+                       [NSString stringWithFormat: @"test10.jpg"] ];
     NSData* data2 = UIImageJPEGRepresentation(self.imageView.image , 0.9);
     [data2 writeToFile:path2 atomically:YES];
-
-    // Do any additional setup after loading the view.
 }
 
 
--(void)click{
-    _picker = [[UIImagePickerController alloc] init];
-    _picker.sourceType = UIImagePickerControllerSourceTypeCamera;
-    _picker.allowsEditing = NO;
-    _picker.delegate = self;
-    
-    [self presentViewController:_picker animated:YES completion:nil];
-}
-
-/*
+#pragma mark - uiimagepicker delegate
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
-//    __weak typeof(self) weakSelf = self;
-    
-//    NSDictionary* dict = [info objectForKey:UIImagePickerControllerMediaMetadata];
+ 
     UIImage *selectImage = [[info objectForKey:UIImagePickerControllerOriginalImage] fixOrientation];
-    _originImageView.image = selectImage;
-    
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
-                                                         NSUserDomainMask, YES);
-    NSString *documentsDirectory = [paths objectAtIndex:0];
-    NSString* path = [documentsDirectory stringByAppendingPathComponent:
-                      [NSString stringWithFormat: @"test.png"] ];
-    NSLog(@"%@",path);
-    NSData* data = UIImagePNGRepresentation(selectImage);
-    [data writeToFile:path atomically:YES];
-
-   Mat dst =  [self scan:[path UTF8String] debug:true];
-    
-    self.imageView.image = [self UIImageFromCVMat:dst];
-     
+    [self operateImage:selectImage];
     [picker dismissViewControllerAnimated:YES completion:nil];
+
 }
-*/
-
-
-// 预处理
--(Mat)preProcess:(UIImage*)selectImage{
-    
-    Mat matImage = [UIImage  cvMatFromUIImage:selectImage];
-    
-    // 灰度
-    Mat matGrey;
-    cvtColor(matImage, matGrey, CV_BGR2GRAY);
-    
-    // 高斯滤波
-    Mat matBlur;
-    GaussianBlur(matGrey, matBlur, cv::Size(5,5), 0);
-    
-    int block_size = 5;
-    
-    Mat matBinary;
-    //    IplImage blur = matBlur;
-    
-    //    unsigned char* dataImage = (unsigned char*)blur.imageData;
-    //    int threshold = Otsu1(dataImage, blur.width, blur.height);
-    //    printf("阈值：%d\n",threshold);
-    //    cv::threshold(matGrey, matBinary, threshold, 255, THRESH_BINARY);
-    //    std::vector<cv::Vec4i> lines;
-    
-    
-    
-    // 二值化
-    adaptiveThreshold(matBlur, matBinary, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, block_size, 5) ;
-    Mat kernel = getStructuringElement(MORPH_RECT, cv::Size(block_size,block_size));
-    
-    // 形态学运算函数，闭运算
-    Mat matClose;
-    morphologyEx(matBinary, matClose, MORPH_CLOSE, kernel,cv::Point(-1,-1),3);
-    
-    return matClose;
-    
-}
-
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
-
-
-
-/**
- * Get edges of an image
- * @param gray - grayscale input image
- * @param canny - output edge image
- */
-void getCanny(Mat gray, Mat &canny) {
-    Mat thres;
-    double high_thres = threshold(gray, thres, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU), low_thres = high_thres * 0.5;
-    Canny(gray, canny, low_thres, high_thres);
-}
-
-struct Line {
-    cv::Point _p1;
-    cv::Point _p2;
-    cv::Point _center;
-    
-    Line(cv::Point p1, cv::Point p2) {
-        _p1 = p1;
-        _p2 = p2;
-        _center = cv::Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
-    }
-};
-
-bool cmp_y(const Line &p1, const Line &p2) {
-    return p1._center.y < p2._center.y;
-}
-
-bool cmp_x(const Line &p1, const Line &p2) {
-    return p1._center.x < p2._center.x;
-}
-
-/**
- * Compute intersect point of two lines l1 and l2
- * @param l1
- * @param l2
- * @return Intersect Point
- */
-Point2f computeIntersect(Line l1, Line l2) {
-    int x1 = l1._p1.x, x2 = l1._p2.x, y1 = l1._p1.y, y2 = l1._p2.y;
-    int x3 = l2._p1.x, x4 = l2._p2.x, y3 = l2._p1.y, y4 = l2._p2.y;
-    if (float d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)) {
-        Point2f pt;
-        pt.x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / d;
-        pt.y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / d;
-        return pt;
-    }
-    return Point2f(-1, -1);
-}
-
+#pragma  custom method
 -(Mat)scan:(String)file debug:(bool)debug  {
     debug = true;
     /* get input image */
@@ -376,6 +206,92 @@ Point2f computeIntersect(Line l1, Line l2) {
     warpPerspective(img, dst, transmtx, dst.size());
     return dst;
  
+}
+
+
+
+bool myfunction3(vector<cv::Point> i, vector<cv::Point> j) {
+    
+    vector<cv::Point> ponto;
+    vector<cv::Point> ponto1;
+    
+    double peri = arcLength(i, true);
+    approxPolyDP(i, ponto, 0.02 * peri, true);
+    
+    double peri1 = arcLength(j, true);
+    approxPolyDP(j, ponto1, 0.02 * peri1, true);
+    
+    return contourArea(ponto) > contourArea(ponto1);
+}
+
+
+
+Point2f center(0,0);
+
+Point2f computeIntersect(Vec4i a,Vec4i b)
+{
+    int x1 = a[0],y1 = a[1],x2 = a[2],y2 = a[3],x3 = b[0],y3 = b[1],x4 = b[2],y4 = b[3];
+    
+    if (float d = ((float)(x1 - x2)*(y3 - y4)-(y1 - y2)*(x3 - x4)))
+    {
+        Point2f pt;
+        pt.x = ((x1*y2 - y1*x2)*(x3 - x4) - (x1 - x2)*(x3*y4 - y3*x4))/d;
+        pt.y = ((x1*y2 - y1*x2)*(y3 - y4) - (y1 - y2)*(x3*y4 - y3*x4))/d;
+        return pt;
+    }
+    else
+        return Point2f(-1,-1);
+}
+
+
+
+/**
+ * Get edges of an image
+ * @param gray - grayscale input image
+ * @param canny - output edge image
+ */
+void getCanny(Mat gray, Mat &canny) {
+    Mat thres;
+    double high_thres = threshold(gray, thres, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU), low_thres = high_thres * 0.5;
+    Canny(gray, canny, low_thres, high_thres);
+}
+
+struct Line {
+    cv::Point _p1;
+    cv::Point _p2;
+    cv::Point _center;
+    
+    Line(cv::Point p1, cv::Point p2) {
+        _p1 = p1;
+        _p2 = p2;
+        _center = cv::Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+    }
+};
+
+bool cmp_y(const Line &p1, const Line &p2) {
+    return p1._center.y < p2._center.y;
+}
+
+bool cmp_x(const Line &p1, const Line &p2) {
+    return p1._center.x < p2._center.x;
+}
+
+/**
+ * Compute intersect point of two lines l1 and l2
+ * @param l1
+ * @param l2
+ * @return Intersect Point
+ */
+Point2f computeIntersect(Line l1, Line l2) {
+    int x1 = l1._p1.x, x2 = l1._p2.x, y1 = l1._p1.y, y2 = l1._p2.y;
+    int x3 = l2._p1.x, x4 = l2._p2.x, y3 = l2._p1.y, y4 = l2._p2.y;
+    if (float d = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)) {
+        Point2f pt;
+        pt.x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / d;
+        pt.y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / d;
+        return pt;
+    }
+    return Point2f(-1, -1);
 }
 
 - (void)didReceiveMemoryWarning {
