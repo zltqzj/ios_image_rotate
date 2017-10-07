@@ -67,12 +67,17 @@ using namespace std;
         
         approxPolyDP(contours[i], ponto, 0.02 * peri, true);
         vector<vector<cv::Point>> bosta;
-        
-        printf("abacate %f   %ld\n", contourArea(ponto), ponto.size());
-        bosta.push_back(ponto);
-        Scalar color = Scalar(0, 0, 255);
-        drawContours(img, bosta, 0, color, 3);
-        break;
+        if (ponto.size() == 4) {
+            printf("\nVIVA USTRA %d, %d\n", ponto[0].x, ponto[0].y);
+            printf("\nVIVA USTRA %d, %d\n", ponto[1].x, ponto[1].y);
+            printf("\nVIVA USTRA %d, %d\n", ponto[2].x, ponto[2].y);
+            printf("\nVIVA USTRA %d, %d\n", ponto[3].x, ponto[3].y);
+            printf("abacate %f   %ld\n", contourArea(ponto), ponto.size());
+            bosta.push_back(ponto);
+            Scalar color = Scalar(0, 0, 255);
+            drawContours(img, bosta, 0, color, 3);
+            break;
+        }
     }
     
     self.originImageView.image = [UIImage UIImageFromCVMat:img];
